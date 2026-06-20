@@ -12,23 +12,15 @@ const base=[["北北海道","北海道"],["南北海道","北海道"],["青森",
 function sh(a){a=[...a];for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function emptySlots(){let s={};for(let i=1;i<=24;i++){s["A"+i]=null;s["B"+i]=null}s["25"]=null;return s}
 function free(s,side){return Object.keys(s).filter(k=>k[0]==side&&!s[k])}
-function put(s,t,side,note){
- let f=free(s,side);
- let ok=f.filter(k=>{let n=+k.slice(1);if(n>17)return true;let o=s[(side=="A"?"B":"A")+n];return !o||o.region!=t.region});
- if(ok.length)f=ok;
- let k=f[Math.floor(Math.random()*f.length)];
- s[k]={...t,slot:k,note};
-}
+function put(s,t,side,note){let f=free(s,side),ok=f.filter(k=>{let n=+k.slice(1);if(n>17)return true;let o=s[(side=="A"?"B":"A")+n];return !o||o.region!=t.region});if(ok.length)f=ok;let k=f[Math.floor(Math.random()*f.length)];s[k]={...t,slot:k,note}}
 function put25(s,t,note){s["25"]={...t,slot:"25",note}}
 function sim(){
 let teams=sh(base.map(x=>({name:x[0]+"代表",pref:x[0],region:x[1]}))).map((t,i)=>({...t,pre:i+1}));
 let g={};teams.forEach(t=>(g[t.region]??=[]).push(t));Object.values(g).forEach(a=>a.sort((x,y)=>x.pre-y.pre));
 let flow=[],groups={};["東北","関東","東京","北信越","東海","近畿","中国","四国","九州"].forEach(r=>groups[r]=(g[r]||[]).slice());
-let hk=(g["北海道"]||[]).sort((a,b)=>a.pre-b.pre),hkTarget=sh(["北信越","東海","中国","四国"])[0];
-hk.forEach(t=>groups[hkTarget].push({...t,region:hkTarget,original:"北海道",hk:true}));
-flow.push("北海道2代表 → "+hkTarget+"へ2校1組で仮編入");
+let hk=(g["北海道"]||[]).sort((a,b)=>a.pre-b.pre),hkTarget=sh(["北信越","東海","中国","四国"])[0];hk.forEach(t=>groups[hkTarget].push({...t,region:hkTarget,original:"北海道",hk:true}));flow.push("北海道2代表 → "+hkTarget+"へ2校1組で仮編入");
 groups["関東東京"]=[...groups["関東"],...groups["東京"]];delete groups["関東"];delete groups["東京"];Object.values(groups).forEach(a=>a.sort((x,y)=>x.pre-y.pre));
-let order=sh(Object.keys(groups).filter(r=>r!="関東東京"&&r!="九州"));order.splice(Math.floor(Math.random()*4),0,"関東東京");order.splice(Math.floor(Math.random()*4),0,"九州");order=order.filter((v,i,a)=>a.indexOf(v)==i);
+let small=sh(Object.keys(groups).filter(r=>r!="関東東京"&&r!="九州"));let first4=sh(["関東東京","九州",small[0],small[1]]);let order=[...first4,...small.slice(2)];
 flow.push("地区順："+order.join(" → "));
 let slots=emptySlots(),rec={};
 for(let r of order){
