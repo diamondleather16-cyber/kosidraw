@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>高校野球抽選シミュレータ</title>
-<script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=MAZPLZXGhIlxwDiXGbI5mdngjvtGnXMn8xfnWKnf9kmW5xgZC9BFsaHz3LFj6XTTmKfGFPR5m0Vqi78uS8dUAahKkwT_YPd0rYLWOgFguE5__32Dqk-X0BpMt09bOKh3lmditf8RLuGM9ioZE2ROQukLnvhgFDrFc-5287FQJHOIv2ynE_drhr3E5_GeW95UpmHaHdhSkKY9UiMaG2j3AUo8FZ_i9T19cdyNuE07-o44a-T3pQOLKFPCo4a8Li9JpC5tAhCwGLJU2R8HChFZug" charset="UTF-8"></script><style>
+<script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=-ro8-lEcUvxgqKz1XsKJlKWVrRnAozJMCLuHPPbE3bDl2PDZVaRtiy85ZslIRe1023uPFCdCx1mzaMTqO-hfyyhVoOt0knzdp1uGKAABz1FeoEGSOUUFFMg9wse_O6E38nKJ8iZSxeckg3VcDvYeTzN0epK4-ZKKunVTqlXQdeoxi2LjryocTj0P2Hz5tKzGjnMOu3qafGmbL_Qptmsr_9ZNgT3pjW1RqOC1fQTIzPK08e0-n051Qd2Z1fTTWhnebEV80V_l6YSpYaJFIoMnww" charset="UTF-8"></script><style>
 :root{--ink:#111827;--sub:#6b7280;--line:#cbd5e1;--bg:#f6f7f9;--card:#fff;--blue:#dbeafe;--red:#fee2e2;--yellow:#fef3c7;--green:#047857;--warn:#b91c1c}
 *{box-sizing:border-box}body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);margin:0;color:var(--ink)}header{background:var(--ink);color:white;padding:14px 16px}h1,h2,h3{margin:.2em 0}.small{font-size:12px;color:var(--sub)}main{padding:12px;max-width:1500px;margin:auto}button{padding:10px 14px;border:0;border-radius:8px;background:var(--ink);color:white;font-weight:bold;margin:4px;cursor:pointer}button.secondary{background:#475569}button.light{background:#e5e7eb;color:#111827}section{background:var(--card);border-radius:12px;padding:12px;margin:10px 0;box-shadow:0 1px 3px #0001}.grid{display:grid;grid-template-columns:1fr;gap:12px}@media(min-width:980px){.grid{grid-template-columns:360px 1fr}.sticky{position:sticky;top:10px}}
 table{border-collapse:collapse;width:100%;font-size:12px}td,th{border:1px solid #ccc;padding:5px}input[type=text]{width:100%;padding:6px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px}.A{background:var(--blue)}.B{background:var(--red)}.N{background:var(--yellow)}.ok{color:var(--green);font-weight:bold}.warn{color:var(--warn);font-weight:bold}.pill{display:inline-block;border-radius:999px;padding:2px 8px;background:#e5e7eb;margin:2px;font-size:12px}.tabs{display:flex;flex-wrap:wrap;gap:6px}.tabs button{margin:0}.hide{display:none}
@@ -13,12 +13,16 @@ table{border-collapse:collapse;width:100%;font-size:12px}td,th{border:1px solid 
 /* 3回戦までの8ブロック表 */
 .blockGrid{display:grid;grid-template-columns:repeat(2,minmax(360px,1fr));gap:12px;margin-top:10px}
 .blockCard{border:1px solid #cbd5e1;border-radius:12px;background:#fff;overflow:hidden}
+.blockCard.seed2{border-color:#93c5fd}.blockCard.seed1{border-color:#fbbf24}.blockCard.first{border-color:#86efac}
+.blockCard.seed2 .blockTitle{background:#1d4ed8}.blockCard.seed1 .blockTitle{background:#b45309}.blockCard.first .blockTitle{background:#047857}
 .blockTitle{background:#111827;color:#fff;padding:8px 10px;font-weight:700;display:flex;justify-content:space-between;gap:8px;align-items:center}
 .blockSub{font-size:11px;color:#d1d5db;font-weight:500}
 .tree3{display:grid;grid-template-columns:1.45fr 1fr 1fr;gap:10px;padding:10px;align-items:center}
 .treeCol{display:flex;flex-direction:column;gap:10px;justify-content:center}
 .gameBox{border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;overflow:hidden;position:relative}
 .gameLabel{background:#e5e7eb;color:#334155;font-size:11px;font-weight:700;padding:3px 6px;border-bottom:1px solid #cbd5e1}
+.gameBox.r1 .gameLabel{background:#dcfce7;color:#14532d}.gameBox.r2 .gameLabel{background:#dbeafe;color:#1e3a8a}.gameBox.r3 .gameLabel{background:#fef3c7;color:#78350f}
+.teamMini.slotA{border-left:5px solid #60a5fa}.teamMini.slotB{border-left:5px solid #f87171}.teamMini.bye{border-left:5px solid #facc15}
 .teamMini{min-height:30px;display:flex;gap:5px;align-items:center;padding:4px 6px;background:#fff;border-bottom:1px solid #e5e7eb}
 .teamMini:last-child{border-bottom:0}.teamMini.bye{background:#fffbeb}.teamMini.win{background:#f1f5f9;color:#475569;font-style:italic}
 .teamMini .slotTag{font-size:10px;color:#64748b;min-width:28px}.teamMini .teamName{font-weight:700;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.teamMini .pref{font-size:10px;color:#64748b;white-space:nowrap}
@@ -46,7 +50,7 @@ table{border-collapse:collapse;width:100%;font-size:12px}td,th{border:1px solid 
 </section>
 </div>
 <div>
-<section id="tab-bracket"><h3>トーナメント表</h3><div class="noteBox">最初に確定する「3回戦までの8ブロック」を表示します。1〜17は1回戦櫓、18〜24は2回戦櫓、25は第4ブロックの2回戦チに入ります。</div><div id="bracket" class="tourneyWrap"></div></section>
+<section id="tab-bracket"><h3>トーナメント表</h3><div class="noteBox">最初に確定する「3回戦までの8ブロック」を表示します。試合番号は公式風に、1回戦=1〜17、2回戦=18〜33、3回戦=34〜41で採番しています。</div><div id="bracket" class="tourneyWrap"></div></section>
 <section id="tab-names" class="hide noPrint"><h3>高校名変更</h3><div class="ctrlRow"><button onclick="saveNames();draw()">保存して再抽選</button><button class="light" onclick="resetNames();draw()">校名を初期化</button></div><div id="nameEditor"></div></section>
 <section id="tab-flow" class="hide noPrint"><h3>抽選経過</h3><div id="flow"></div></section>
 <section id="tab-list" class="hide noPrint"><h3>配置一覧</h3><div id="list"></div></section>
@@ -94,38 +98,57 @@ let [r1,r2,r3,r4]=roundsLeft();let heads=['出場校','1回戦','2回戦','3回�
 let teamCol=`<div><div class="roundHead">出場校</div><div class="teamCol">${teamRows}</div></div>`;let cols=[`<div class="rcol" style="height:${height}px"><div class="roundHead">1回戦</div>${r1}</div>`,`<div class="rcol" style="height:${height}px"><div class="roundHead">2回戦</div>${r2}</div>`,`<div class="rcol" style="height:${height}px"><div class="roundHead">3回戦</div>${r3}</div>`,`<div class="rcol" style="height:${height}px"><div class="roundHead">4回戦</div>${r4}</div>`];
 return `<div class="half ${side}">${side==='left'?teamCol+cols.join(''):cols.reverse().join('')+teamCol}</div>`}
 function slotTeam(k){return current?.slots?.[k]||null}
-function miniTeam(k, opt={}){let t=slotTeam(k);let cls='teamMini'+(opt.bye?' bye':'')+(opt.win?' win':'');let label=opt.label||k;return `<div class="${cls}"><span class="slotTag">${esc(label)}</span><span class="teamName">${esc(t?.name||opt.text||'')}</span><span class="pref">${t?`(${esc(t.pref)})`:''}</span></div>`}
+const gameNo={};
+for(let i=1;i<=17;i++)gameNo['R1_'+i]=i;
+for(let i=18;i<=24;i++)gameNo['R2_'+i]=i;
+let n2=25; // 1回戦勝者同士の2回戦
+[['B-C',2,3],['D-E',4,5],['F-G',6,7],['H-I',8,9],['J-K',10,11],['L-M',12,13],['N-O',14,15],['P-Q',16,17]].forEach(x=>gameNo['R2_'+x[0]]=n2++);
+gameNo['R2_A_25']=33;
+'ABCDEFGH'.split('').forEach((c,i)=>gameNo['R3_'+c]=34+i);
+function gLabel(round,key,title){let no=gameNo[round+'_'+key];return `試合${no}　${title}`}
+function miniTeam(k, opt={}){let t=slotTeam(k);let cls='teamMini'+(opt.bye?' bye':'')+(opt.win?' win':'')+(String(k).startsWith('A')?' slotA':String(k).startsWith('B')?' slotB':'');let label=opt.label||k;return `<div class="${cls}"><span class="slotTag">${esc(label)}</span><span class="teamName">${esc(t?.name||opt.text||'')}</span><span class="pref">${t?`(${esc(t.pref)})`:''}</span></div>`}
 function winner(label){return `<div class="teamMini win"><span class="slotTag">勝者</span><span class="teamName">${esc(label)}</span></div>`}
-function gameBox(label, keys, opt={}){let rows=keys.map(x=> typeof x==='string'?miniTeam(x): (x.kind==='winner'?winner(x.text):miniTeam(x.key,x))).join('');return `<div class="gameBox"><div class="gameLabel">${esc(label)}</div>${rows}</div>`}
-function blockHtml(no, title, note, leftGames, midGames, finalLabel){
- let left=leftGames.map(g=>gameBox(g.label,g.keys)).join('');
- let mid=midGames.map(g=>gameBox(g.label,g.keys)).join('');
- let fin=gameBox(finalLabel,[{kind:'winner',text:midGames[0]?.label||leftGames[0]?.label||''},{kind:'winner',text:midGames[1]?.label||leftGames[1]?.label||''}]);
- return `<div class="blockCard"><div class="blockTitle"><span>第${no}ブロック</span><span class="blockSub">${esc(title)}</span></div><div class="tree3"><div class="treeCol">${left}</div><div class="treeCol">${mid}</div><div class="treeCol">${fin}</div></div>${note?`<div class="blockNote">${esc(note)}</div>`:''}</div>`
+function gameBox(label, keys, roundClass='') {let rows=keys.map(x=> typeof x==='string'?miniTeam(x): (x.kind==='winner'?winner(x.text):miniTeam(x.key,x))).join('');return `<div class="gameBox ${roundClass}"><div class="gameLabel">${esc(label)}</div>${rows}</div>`}
+function blockHtml(no, title, note, leftGames, midGames, finalLabel, cls=''){
+ let left=leftGames.map(g=>gameBox(g.label,g.keys,g.round||'')).join('');
+ let mid=midGames.map(g=>gameBox(g.label,g.keys,g.round||'')).join('');
+ let fin=gameBox(finalLabel,[{kind:'winner',text:midGames[0]?.short||midGames[0]?.label||leftGames[0]?.label||''},{kind:'winner',text:midGames[1]?.short||midGames[1]?.label||leftGames[1]?.label||''}], 'r3');
+ return `<div class="blockCard ${cls}"><div class="blockTitle"><span>第${no}ブロック</span><span class="blockSub">${esc(title)}</span></div><div class="tree3"><div class="treeCol">${left}</div><div class="treeCol">${mid}</div><div class="treeCol">${fin}</div></div>${note?`<div class="blockNote">${esc(note)}</div>`:''}</div>`
 }
 function blockByeHtml(){
- let left=[{label:'1回戦A／櫓1',keys:['A1','B1']},{label:'2回戦ト／櫓24',keys:['A24','B24']}];
- let mid=[{label:'2回戦チ',keys:[{kind:'winner',text:'1回戦A'},{key:'25',label:'25',bye:true}]},{label:'2回戦ト 勝者',keys:[{kind:'winner',text:'櫓24'}]}];
- return blockHtml(4,'2回戦ト・チ → 3回戦D','25番は1回戦Aの勝者と2回戦チで対戦。2回戦トの勝者と2回戦チの勝者が3回戦D。',left,mid,'3回戦D')
+ // ユーザー指定：第4ブロックは 24 を上、1→25 側を下にする
+ let left=[
+  {label:gLabel('R2','24','2回戦ト／櫓24'), short:'試合24', round:'r2', keys:['A24','B24']},
+  {label:gLabel('R1','1','1回戦A／櫓1'), short:'試合1', round:'r1', keys:['A1','B1']}
+ ];
+ let mid=[
+  {label:'試合24勝者', short:'試合24勝者', round:'r2', keys:[{kind:'winner',text:'試合24'}]},
+  {label:gLabel('R2','A_25','2回戦チ／1回戦A勝者 vs 25'), short:'試合33', round:'r2', keys:[{kind:'winner',text:'試合1'},{key:'25',label:'25',bye:true}]}
+ ];
+ return blockHtml(4,'試合24・33 → 試合37','25番は試合1の勝者と試合33で対戦。試合24の勝者と試合33の勝者が試合37。',left,mid,gLabel('R3','D','3回戦D'),'seed1')
 }
 function blockSecond(no,a,b,final){
- return blockHtml(no,`2回戦${a.label2}・${b.label2} → 3回戦${final}`,'',[],[
-  {label:`2回戦${a.label2}／櫓${a.n}`,keys:[`A${a.n}`,`B${a.n}`]},
-  {label:`2回戦${b.label2}／櫓${b.n}`,keys:[`A${b.n}`,`B${b.n}`]}
- ],`3回戦${final}`)
+ return blockHtml(no,`試合${a.n}・${b.n} → 試合${gameNo['R3_'+final]}`,'',[],[
+  {label:gLabel('R2',String(a.n),`2回戦${a.kana}／櫓${a.n}`), short:`試合${a.n}`, round:'r2', keys:[`A${a.n}`,`B${a.n}`]},
+  {label:gLabel('R2',String(b.n),`2回戦${b.kana}／櫓${b.n}`), short:`試合${b.n}`, round:'r2', keys:[`A${b.n}`,`B${b.n}`]}
+ ],gLabel('R3',final,`3回戦${final}`),'seed2')
 }
 function blockFirst(no, start, final){
- const labels=['B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q'];
+ const labels=['','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q'];
  let nums=[start,start+1,start+2,start+3];
- let left=nums.map((n,idx)=>({label:`1回戦${labels[n-2]}／櫓${n}`,keys:[`A${n}`,`B${n}`]}));
- let mid=[{label:`2回戦 ${labels[start-2]}-${labels[start-1]}勝者`,keys:[{kind:'winner',text:`1回戦${labels[start-2]}`},{kind:'winner',text:`1回戦${labels[start-1]}`}]},{label:`2回戦 ${labels[start]}-${labels[start+1]}勝者`,keys:[{kind:'winner',text:`1回戦${labels[start]}`},{kind:'winner',text:`1回戦${labels[start+1]}`}] }];
- return blockHtml(no,`1回戦櫓${start}〜${start+3} → 3回戦${final}`,'',left,mid,`3回戦${final}`)
+ let left=nums.map(n=>({label:gLabel('R1',String(n),`1回戦${labels[n]}／櫓${n}`), short:`試合${n}`, round:'r1', keys:[`A${n}`,`B${n}`]}));
+ let pair1=`${labels[start]}-${labels[start+1]}`, pair2=`${labels[start+2]}-${labels[start+3]}`;
+ let mid=[
+  {label:gLabel('R2',pair1,`2回戦 ${labels[start]}-${labels[start+1]}勝者`), short:`試合${gameNo['R2_'+pair1]}`, round:'r2', keys:[{kind:'winner',text:`試合${start}`},{kind:'winner',text:`試合${start+1}`}]},
+  {label:gLabel('R2',pair2,`2回戦 ${labels[start+2]}-${labels[start+3]}勝者`), short:`試合${gameNo['R2_'+pair2]}`, round:'r2', keys:[{kind:'winner',text:`試合${start+2}`},{kind:'winner',text:`試合${start+3}`}]}
+ ];
+ return blockHtml(no,`試合${start}〜${start+3} → 試合${gameNo['R3_'+final]}`,'',left,mid,gLabel('R3',final,`3回戦${final}`),'first')
 }
 function renderBracket(){
- bracket.innerHTML=`<div class="blockGrid">
- ${blockSecond(1,{n:18,label2:'イ'},{n:19,label2:'ロ'},'A')}
- ${blockSecond(2,{n:20,label2:'ハ'},{n:21,label2:'ニ'},'B')}
- ${blockSecond(3,{n:22,label2:'ホ'},{n:23,label2:'ヘ'},'C')}
+ bracket.innerHTML=`<div class="noteBox" style="margin:8px 0">色分け：<span class="pill" style="background:#dcfce7">1回戦</span><span class="pill" style="background:#dbeafe">2回戦</span><span class="pill" style="background:#fef3c7">3回戦</span><span class="pill">青線=A側／赤線=B側／黄=25番</span></div><div class="blockGrid">
+ ${blockSecond(1,{n:18,kana:'イ'},{n:19,kana:'ロ'},'A')}
+ ${blockSecond(2,{n:20,kana:'ハ'},{n:21,kana:'ニ'},'B')}
+ ${blockSecond(3,{n:22,kana:'ホ'},{n:23,kana:'ヘ'},'C')}
  ${blockByeHtml()}
  ${blockFirst(5,2,'E')}
  ${blockFirst(6,6,'F')}
