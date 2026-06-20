@@ -11,60 +11,67 @@ body{font-family:sans-serif;background:#f6f7f9;margin:0;color:#111827}header{bac
 const base=[["北北海道","北海道"],["南北海道","北海道"],["青森","東北"],["岩手","東北"],["秋田","東北"],["山形","東北"],["宮城","東北"],["福島","東北"],["茨城","関東"],["栃木","関東"],["群馬","関東"],["埼玉","関東"],["千葉","関東"],["神奈川","関東"],["山梨","関東"],["東東京","東京"],["西東京","東京"],["新潟","北信越"],["長野","北信越"],["富山","北信越"],["石川","北信越"],["福井","北信越"],["岐阜","東海"],["静岡","東海"],["愛知","東海"],["三重","東海"],["滋賀","近畿"],["京都","近畿"],["大阪","近畿"],["兵庫","近畿"],["奈良","近畿"],["和歌山","近畿"],["鳥取","中国"],["島根","中国"],["岡山","中国"],["広島","中国"],["山口","中国"],["香川","四国"],["徳島","四国"],["愛媛","四国"],["高知","四国"],["福岡","九州"],["佐賀","九州"],["長崎","九州"],["熊本","九州"],["大分","九州"],["宮崎","九州"],["鹿児島","九州"],["沖縄","九州"]];
 function sh(a){a=[...a];for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function slots0(){let s={};for(let i=1;i<=24;i++){s["A"+i]=null;s["B"+i]=null}s["25"]=null;return s}
-function freeKeys(s,side){return Object.keys(s).filter(k=>k[0]==side&&!s[k])}
-function putPlan(plan,t,side,note){plan.push({...t,target:side,note})}
+function free(s,side){return Object.keys(s).filter(k=>k[0]==side&&!s[k])}
+function opp(side){return side=="A"?"B":"A"}
 function same(d){let c=0,p=[];for(let i=1;i<=17;i++){let a=d.slots["A"+i],b=d.slots["B"+i];if(a&&b&&a.region==b.region&&a.region!="空き"){c++;p.push("櫓"+i+" "+a.pref+"-"+b.pref+"("+a.region+")")}}return{c,p}}
-function place(slots,t,side){
- if(side=="25"){slots["25"]={...t,slot:"25"};return}
- let f=freeKeys(slots,side);
- let ok=f.filter(k=>{
-  let n=+k.slice(1);
-  if(n>17)return true;
-  let o=slots[(side=="A"?"B":"A")+n];
-  return !o||o.region!=t.region;
- });
+function place(slots,t,side,strict){
+ if(side=="25"){slots["25"]={...t,slot:"25"};return true}
+ let f=free(slots,side);
+ let ok=f.filter(k=>{let n=+k.slice(1);if(n>17)return true;let o=slots[opp(side)+n];return !o||o.region!=t.region});
+ if(strict&&ok.length==0)return false;
  if(ok.length)f=ok;
+ if(!f.length)return false;
  let k=f[Math.floor(Math.random()*f.length)];
  slots[k]={...t,slot:k};
+ return true;
 }
 function sim(){
 let teams=sh(base.map(x=>({name:x[0]+"代表",pref:x[0],region:x[1]}))).map((t,i)=>({...t,pre:i+1}));
 let g={};teams.forEach(t=>(g[t.region]??=[]).push(t));Object.values(g).forEach(a=>a.sort((x,y)=>x.pre-y.pre));
-let flow=[],groups={};["東北","関東","東京","北信越","東海","近畿","中国","四国","九州"].forEach(r=>groups[r]=(g[r]||[]).slice());
-let hk=(g["北海道"]||[]).sort((a,b)=>a.pre-b.pre),hkTarget=sh(["北信越","東海","中国","四国"])[0];
+let flow=[],groups={};["東北","関東","東京","北信越","東海","近畿","中国","四国","九州"].forEach(r=>groups[r]=(g[r]||[]).slice());let hk=(g["北海道"]||[]).sort((a,b)=>a.pre-b.pre),hkTarget=sh(["北信越","東海","中国","四国"])[0];
 hk.forEach(t=>groups[hkTarget].push({...t,region:hkTarget,original:"北海道",hk:true}));
 flow.push("北海道2代表 → "+hkTarget+"へ2校1組で仮編入");
-groups["関東東京"]=[...groups["関東"],...groups["東京"]];delete groups["関東"];delete groups["東京"];Object.values(groups).forEach(a=>a.sort((x,y)=>x.pre-y.pre));
+
+groups["関東東京"]=[...groups["関東"],...groups["東京"]];delete groups["関東"];delete groups["東京"];
+Object.values(groups).forEach(a=>a.sort((x,y)=>x.pre-y.pre));
+
 let small=sh(Object.keys(groups).filter(r=>r!="関東東京"&&r!="九州"));
 let first4=sh(["関東東京","九州",small[0],small[1]]);
 let order=[...first4,...small.slice(2)];
-flow.push("地区順："+order.join(" → "));let cap={A:24,B:24,N:1},plan=[],rec={};
+flow.push("地区順："+order.join(" → "));
+
+let cap={A:24,B:24,N:1},plan=[],rec={};
+function add(t,target,note){plan.push({...t,target,note});if(target=="25")cap.N--;else cap[target]--}
+
 for(let r of order){
 let schools=groups[r].slice().sort((a,b)=>a.pre-b.pre);
-let side=cap.A<=cap.B?"A":"B"; if(Math.random()<.5)side=side=="A"?"B":"A";
-let other=side=="A"?"B":"A"; rec[r]=[];
+let side=cap.A<=cap.B?"A":"B";if(Math.random()<.5)side=opp(side);
+let other=opp(side);rec[r]=[];
 let hks=schools.filter(x=>x.hk),rest=schools.filter(x=>!x.hk);
+
 if(hks.length==2){
 let target=cap[side]>=2?side:(cap[other]>=2?other:side);
-hks.forEach(t=>{putPlan(plan,t,target,r+" 北海道同側");cap[target]--;rec[r].push(t.pref+":"+target+"(北海道同側)")});
+hks.forEach(t=>{add(t,target,r+" 北海道同側");rec[r].push(t.pref+":"+target+"(北海道同側)")});
 }
+
 for(let t of rest){
-if(cap[side]>0){putPlan(plan,t,side,r);cap[side]--;rec[r].push(t.pref+":"+side)}
-else if(cap[other]>0){putPlan(plan,t,other,r+" 分割");cap[other]--;rec[r].push(t.pref+":"+other)}
-else if(cap.N>0){putPlan(plan,t,"25",r+" 25");cap.N--;rec[r].push(t.pref+":25")}
+if(cap[side]>0){add(t,side,r);rec[r].push(t.pref+":"+side)}
+else if(cap[other]>0){add(t,other,r+" 分割");rec[r].push(t.pref+":"+other)}
+else if(cap.N>0){add(t,"25",r+" 25");rec[r].push(t.pref+":25")}
 }
 }
 
-// 分割地区を先に本抽選する
 let regSides={};plan.forEach(t=>{(regSides[t.region]??=new Set()).add(t.target)});
 let splitRegions=new Set(Object.keys(regSides).filter(r=>regSides[r].has("A")&&regSides[r].has("B")));
-let split=plan.filter(t=>splitRegions.has(t.region)).sort((a,b)=>a.pre-b.pre);
-let normal=plan.filter(t=>!splitRegions.has(t.region)).sort((a,b)=>a.pre-b.pre);
 flow.push("分割地区先抽選："+([...splitRegions].join("・")||"なし"));
 
 let slots=slots0();
-split.forEach(t=>place(slots,t,t.target));
-normal.forEach(t=>place(slots,t,t.target));
+let split=plan.filter(t=>splitRegions.has(t.region)).sort((a,b)=>a.pre-b.pre);
+let normal=plan.filter(t=>!splitRegions.has(t.region)).sort((a,b)=>a.pre-b.pre);
+
+// 分割地区は先に厳格配置。同じ櫓番号のA/Bに同地区が来る場合はその番号を引けない。
+for(let t of split){if(!place(slots,t,t.target,true))place(slots,t,t.target,false)}
+for(let t of normal){place(slots,t,t.target,true)||place(slots,t,t.target,false)}
 
 return{slots,flow,rec,order,splitRegions:[...splitRegions]}}
 function draw(){
