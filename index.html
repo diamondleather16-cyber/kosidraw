@@ -2,7 +2,7 @@
 
 <title>高校野球抽選シミュレータ</title>
 <style>
-body{font-family:sans-serif;background:#f6f7f9;margin:0;color:#111827}header{background:#111827;color:white;padding:14px}main{padding:12px}button{padding:10px 14px;border:0;border-radius:8px;background:#111827;color:white;font-weight:bold;margin:4px}section{background:white;border-radius:12px;padding:12px;margin:10px 0}table{border-collapse:collapse;width:100%;font-size:12px}td,th{border:1px solid #ccc;padding:4px}.A{background:#dbeafe}.B{background:#fee2e2}.N{background:#fef3c7}.warn{color:#b91c1c;font-weight:bold}.ok{color:#047857;font-weight:bold}
+body{font-family:sans-serif;background:#f6f7f9;margin:0;color:#111827}header{background:#111827;color:white;padding:14px}main{padding:12px}button{padding:10px 14px;border:0;border-radius:8px;background:#111827;color:white;font-weight:bold;margin:4px}section{background:white;border-radius:12px;padding:12px;margin:10px 0}table{border-collapse:collapse;width:100%;font-size:12px}td,th{border:1px solid #ccc;padding:4px}.A{background:#dbeafe}.B{background:#fee2e2}.N{background:#fef3c7}.ok{color:#047857;font-weight:bold}.warn{color:#b91c1c;font-weight:bold}
 </style>
 <header><h2>高校野球 地区ブロック抽選</h2></header><main>
 <section><button onclick="draw()">1回抽選</button><button onclick="stats()">1000回集計</button></section>
@@ -12,77 +12,54 @@ const base=[["北北海道","北海道"],["南北海道","北海道"],["青森",
 function sh(a){a=[...a];for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function slots0(){let s={};for(let i=1;i<=24;i++){s["A"+i]=null;s["B"+i]=null}s["25"]=null;return s}
 function free(s,side){return Object.keys(s).filter(k=>k[0]==side&&!s[k])}
-function opp(side){return side=="A"?"B":"A"}
-function same(d){let c=0,p=[];for(let i=1;i<=17;i++){let a=d.slots["A"+i],b=d.slots["B"+i];if(a&&b&&a.region==b.region&&a.region!="空き"){c++;p.push("櫓"+i+" "+a.pref+"-"+b.pref+"("+a.region+")")}}return{c,p}}
-function place(slots,t,side,strict){
- if(side=="25"){slots["25"]={...t,slot:"25"};return true}
- let f=free(slots,side);
- let ok=f.filter(k=>{let n=+k.slice(1);if(n>17)return true;let o=slots[opp(side)+n];return !o||o.region!=t.region});
- if(strict&&ok.length==0)return false;
+function op(side){return side=="A"?"B":"A"}
+function place(s,t,side){
+ if(side=="25"){s["25"]={...t,slot:"25"};return}
+ let f=free(s,side);
+ let ok=f.filter(k=>{let n=+k.slice(1);if(n>17)return true;let o=s[op(side)+n];return !o||o.region!=t.region});
  if(ok.length)f=ok;
- if(!f.length)return false;
  let k=f[Math.floor(Math.random()*f.length)];
- slots[k]={...t,slot:k};
- return true;
+ s[k]={...t,slot:k};
 }
-function sim(){
+function same(d){let c=0,p=[];for(let i=1;i<=17;i++){let a=d.slots["A"+i],b=d.slots["B"+i];if(a&&b&&a.region==b.region&&a.region!="空き"){c++;p.push("櫓"+i+" "+a.pref+"-"+b.pref+"("+a.region+")")}}return{c,p}}
+function once(){
 let teams=sh(base.map(x=>({name:x[0]+"代表",pref:x[0],region:x[1]}))).map((t,i)=>({...t,pre:i+1}));
 let g={};teams.forEach(t=>(g[t.region]??=[]).push(t));Object.values(g).forEach(a=>a.sort((x,y)=>x.pre-y.pre));
-let flow=[],groups={};["東北","関東","東京","北信越","東海","近畿","中国","四国","九州"].forEach(r=>groups[r]=(g[r]||[]).slice());let hk=(g["北海道"]||[]).sort((a,b)=>a.pre-b.pre),hkTarget=sh(["北信越","東海","中国","四国"])[0];
-hk.forEach(t=>groups[hkTarget].push({...t,region:hkTarget,original:"北海道",hk:true}));
+let groups={},flow=[],rec={};["東北","関東","東京","北信越","東海","近畿","中国","四国","九州"].forEach(r=>groups[r]=(g[r]||[]).slice());
+let hk=(g["北海道"]||[]).sort((a,b)=>a.pre-b.pre),hkTarget=sh(["北信越","東海","中国","四国"])[0];
+hk.forEach(t=>groups[hkTarget].push({...t,region:hkTarget,hk:true}));
 flow.push("北海道2代表 → "+hkTarget+"へ2校1組で仮編入");
-
 groups["関東東京"]=[...groups["関東"],...groups["東京"]];delete groups["関東"];delete groups["東京"];
 Object.values(groups).forEach(a=>a.sort((x,y)=>x.pre-y.pre));
-
 let small=sh(Object.keys(groups).filter(r=>r!="関東東京"&&r!="九州"));
-let first4=sh(["関東東京","九州",small[0],small[1]]);
-let order=[...first4,...small.slice(2)];
+let order=[...sh(["関東東京","九州",small[0],small[1]]),...small.slice(2)];
 flow.push("地区順："+order.join(" → "));
-
-let cap={A:24,B:24,N:1},plan=[],rec={};
+let cap={A:24,B:24,N:1},plan=[];
 function add(t,target,note){plan.push({...t,target,note});if(target=="25")cap.N--;else cap[target]--}
-
 for(let r of order){
-let schools=groups[r].slice().sort((a,b)=>a.pre-b.pre);
-let side=cap.A<=cap.B?"A":"B";if(Math.random()<.5)side=opp(side);
-let other=opp(side);rec[r]=[];
-let hks=schools.filter(x=>x.hk),rest=schools.filter(x=>!x.hk);
-
-if(hks.length==2){
-let target=cap[side]>=2?side:(cap[other]>=2?other:side);
-hks.forEach(t=>{add(t,target,r+" 北海道同側");rec[r].push(t.pref+":"+target+"(北海道同側)")});
+ let schools=groups[r].slice().sort((a,b)=>a.pre-b.pre),side=cap.A<=cap.B?"A":"B";if(Math.random()<.5)side=op(side);let other=op(side);rec[r]=[];
+ let hks=schools.filter(x=>x.hk),rest=schools.filter(x=>!x.hk);
+ if(hks.length==2){let target=cap[side]>=2?side:(cap[other]>=2?other:side);hks.forEach(t=>{add(t,target,r+" 北海道同側");rec[r].push(t.pref+":"+target+"(北海道同側)")})}
+ for(let t of rest){if(cap[side]>0){add(t,side,r);rec[r].push(t.pref+":"+side)}else if(cap[other]>0){add(t,other,r+" 分割");rec[r].push(t.pref+":"+other)}else if(cap.N>0){add(t,"25",r+" 25");rec[r].push(t.pref+":25")}}
 }
-
-for(let t of rest){
-if(cap[side]>0){add(t,side,r);rec[r].push(t.pref+":"+side)}
-else if(cap[other]>0){add(t,other,r+" 分割");rec[r].push(t.pref+":"+other)}
-else if(cap.N>0){add(t,"25",r+" 25");rec[r].push(t.pref+":25")}
-}
-}
-
-let regSides={};plan.forEach(t=>{(regSides[t.region]??=new Set()).add(t.target)});
-let splitRegions=new Set(Object.keys(regSides).filter(r=>regSides[r].has("A")&&regSides[r].has("B")));
-flow.push("分割地区先抽選："+([...splitRegions].join("・")||"なし"));
-
+let rs={};plan.forEach(t=>(rs[t.region]??=new Set()).add(t.target));
+let split=new Set(Object.keys(rs).filter(r=>rs[r].has("A")&&rs[r].has("B")));
+flow.push("分割地区先抽選："+([...split].join("・")||"なし"));
 let slots=slots0();
-let split=plan.filter(t=>splitRegions.has(t.region)).sort((a,b)=>a.pre-b.pre);
-let normal=plan.filter(t=>!splitRegions.has(t.region)).sort((a,b)=>a.pre-b.pre);
-
-// 分割地区は先に厳格配置。同じ櫓番号のA/Bに同地区が来る場合はその番号を引けない。
-for(let t of split){if(!place(slots,t,t.target,true))place(slots,t,t.target,false)}
-for(let t of normal){place(slots,t,t.target,true)||place(slots,t,t.target,false)}
-
-return{slots,flow,rec,order,splitRegions:[...splitRegions]}}
+plan.filter(t=>split.has(t.region)).sort((a,b)=>a.pre-b.pre).forEach(t=>place(slots,t,t.target));
+plan.filter(t=>!split.has(t.region)).sort((a,b)=>a.pre-b.pre).forEach(t=>place(slots,t,t.target));
+return{slots,flow,rec,order,split:[...split]}
+}
+function sim(){for(let i=0;i<500;i++){let d=once();let vals=Object.values(d.slots).filter(Boolean),names=new Set(vals.map(x=>x.name));if(vals.length==49&&names.size==49&&same(d).c==0)return d}return once()}
 function draw(){
 let d=sim(),s=same(d),vals=Object.values(d.slots).filter(Boolean),names=new Set(vals.map(x=>x.name));
-summary.innerHTML="配置 ${vals.length}/49　${names.size==49?'<span class=ok>OK</span>':'<span class=warn>要確認</span>'}<br>同地区初戦：<b>${s.c}</b>件<br>${s.p.join("<br>")||"なし"}<br>分割地区：${d.splitRegions.join("・")||"なし"}";
+summary.innerHTML=`配置 ${vals.length}/49　${names.size==49?'<span class=ok>OK</span>':'<span class=warn>要確認</span>'}<br>同地区初戦：<b>${s.c}</b>件<br>${s.p.join("<br>")||"なし"}<br>分割地区：${d.split.join("・")||"なし"}`;
 flow.innerHTML=d.flow.join("<br>")+"<br><br>"+d.order.map(r=>"・"+r+"："+d.rec[r].join("、")).join("<br>");
 let keys=Object.keys(d.slots).sort((a,b)=>{let na=a=="25"?25:+a.slice(1),nb=b=="25"?25:+b.slice(1);return na-nb||a.localeCompare(b)});
 let h="<table><tr><th>枠</th><th>校名</th><th>地区</th><th>予備</th><th>備考</th></tr>";
-keys.forEach(k=>{let t=d.slots[k];h+="<tr class="${k[0]}"><td>${k}</td><td>${t?.name||""}</td><td>${t?.region||""}</td><td>${t?.pre||""}</td><td>${t?.note||""}</td></tr>"});
+keys.forEach(k=>{let t=d.slots[k];h+=`<tr class="${k[0]}"><td>${k}</td><td>${t?.name||""}</td><td>${t?.region||""}</td><td>${t?.pre||""}</td><td>${t?.note||""}</td></tr>`});
 list.innerHTML=h+"</table>";
 }
-function stats(){let n=1000,total=0,max=0;for(let i=0;i<n;i++){let c=same(sim()).c;total+=c;if(c>max)max=c}alert("1000回平均 同地区初戦："+(total/n).toFixed(3)+"件\n最大："+max+"件")}
+function stats(){let n=1000,total=0,max=0;for(let i=0;i<n;i++){let c=same(sim()).c;total+=c;if(c>max)max=c}alert("1000回平均 同地区初戦："+(total/n).toFixed(3)+"件\\n最大："+max+"件")}
 draw();
 </script></main></html>
